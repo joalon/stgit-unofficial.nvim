@@ -2,7 +2,6 @@
 -- Should be possible to:
 --   - create a new patch?
 --   - Get sensible error messages
---   - don't execute any changes until saving
 
 stgit_bufh = nil
 written_state = nil
