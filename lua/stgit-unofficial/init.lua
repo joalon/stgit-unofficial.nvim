@@ -27,11 +27,11 @@ local function Series()
     vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, written_state)
     vim.api.nvim_win_set_cursor(0, {top_index, 0})
 
-    vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit')._execute_staged()")
+    vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit-unofficial')._execute_staged()")
 
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-j>', ":lua require('stgit')._stage_push()<cr>", {})
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-k>', ":lua require('stgit')._stage_pop()<cr>", {})
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', 'dd', ":lua require('stgit')._stage_delete()<cr>", {})
+    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-j>', ":lua require('stgit-unofficial')._stage_push()<cr>", {})
+    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-k>', ":lua require('stgit-unofficial')._stage_pop()<cr>", {})
+    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', 'dd', ":lua require('stgit-unofficial')._stage_delete()<cr>", {})
 end
 
 local function _stage_pop()
