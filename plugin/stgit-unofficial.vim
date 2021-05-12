@@ -1,3 +1,5 @@
 
-nnoremap <leader>ss <cmd>lua require('stgit-unofficial').Series()<cr>
+function StgSeries()
+    lua require('stgit-unofficial').Series()
+endfunction
 
