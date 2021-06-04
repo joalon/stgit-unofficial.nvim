@@ -4,7 +4,7 @@ written_state = nil
 top_index = nil
 largest_index = nil
 
-local function Series()
+local function series()
     written_state = vim.fn.systemlist("stg series")
 
     for k, v in pairs(written_state) do
@@ -23,14 +23,11 @@ local function Series()
     vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, written_state)
     vim.api.nvim_win_set_cursor(0, {top_index, 0})
 
-    vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit-unofficial')._execute_staged()")
-
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-j>', ":lua require('stgit-unofficial')._stage_push()<cr>", {})
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', '<C-k>', ":lua require('stgit-unofficial')._stage_pop()<cr>", {})
-    vim.api.nvim_buf_set_keymap(stgit_bufh, 'n', 'dd', ":lua require('stgit-unofficial')._stage_delete()<cr>", {})
+    -- When writing to the buffer, run 'execute_staged' to apply the changes
+    vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit-unofficial').execute_staged()")
 end
 
-local function _stage_pop()
+local function stage_pop()
     if top_index > 1 then
         local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
 
@@ -42,7 +39,7 @@ local function _stage_pop()
     end
 end
 
-local function _stage_push()
+local function stage_push()
     if top_index < largest_index then
         local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
 
@@ -54,7 +51,7 @@ local function _stage_push()
     end
 end
 
-local function _stage_delete()
+local function stage_delete()
     local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
     local cursor_index = vim.api.nvim_win_get_cursor(0)[1]
 
@@ -65,8 +62,7 @@ local function _stage_delete()
     vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, current_state)
 end
 
-local function _execute_staged()
-
+local function execute_staged()
     local index_is_dirty = next(vim.fn.systemlist("git diff --stat")) ~= nil
 
     if index_is_dirty then
@@ -100,9 +96,9 @@ local function _execute_staged()
 end
 
 return {
-    Series = Series,
-    _execute_staged = _execute_staged,
-    _stage_pop = _stage_pop,
-    _stage_push = _stage_push,
-    _stage_delete = _stage_delete
+    series         = series,
+    stage_pop      = stage_pop,
+    stage_push     = stage_push,
+    stage_delete   = stage_delete,
+    execute_staged = execute_staged
 }
