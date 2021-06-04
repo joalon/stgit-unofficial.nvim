@@ -1,7 +1,3 @@
--- Setup some keybindings and an augroup+lua callback for saving.
--- Should be possible to:
---   - create a new patch?
---   - Get sensible error messages
 
 stgit_bufh = nil
 written_state = nil
@@ -82,7 +78,6 @@ local function _execute_staged()
     for line, patch in pairs(current_state) do
         if patch:sub(1, 1) == "D" then
             local cmd = "!stg delete " .. patch:sub(3, -1)
-            --print("executing " .. cmd)
             vim.api.nvim_command(cmd)
         end
     end
@@ -90,7 +85,6 @@ local function _execute_staged()
     for line, patch in pairs(current_state) do
         if patch:sub(1, 1) == ">" then
             cmd = "!stg goto " .. patch:sub(3, -1)
-            --print("executing " .. cmd)
             vim.api.nvim_command(cmd)
             top_index = line
         end
