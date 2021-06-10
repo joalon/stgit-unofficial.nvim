@@ -25,6 +25,7 @@ local function series()
 
     -- When writing to the buffer, run 'execute_staged' to apply the changes
     vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit-unofficial').execute_staged()")
+    vim.cmd("autocmd QuitPre <buffer="..stgit_bufh.."> :bdelete! "..stgit_bufh)
 end
 
 local function stage_pop()
