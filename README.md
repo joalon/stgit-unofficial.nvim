@@ -18,3 +18,17 @@ If the index is dirty it will temporarily be stored on the git stash.
 
 ## Features
 Right now you can... Check, push, pop and delete your patches! Seriously, that's it right now.
+
+## Example
+I've got the following keybinds in my init.vim:
+
+```
+let mapleader="\<Space>"
+
+" stgit config
+nnoremap <leader>ss :call StgSeries()<CR>
+nnoremap <leader>sj :call StgPop()<CR>
+nnoremap <leader>sk :call StgPush()<CR>
+nnoremap <leader>sd :call StgDelete()<CR>
+nnoremap <leader>sr :!stg refresh -i<CR>
+```
