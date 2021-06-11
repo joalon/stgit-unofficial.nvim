@@ -29,6 +29,5 @@ let mapleader="\<Space>"
 nnoremap <leader>ss :call StgSeries()<CR>
 nnoremap <leader>sj :call StgPop()<CR>
 nnoremap <leader>sk :call StgPush()<CR>
-nnoremap <leader>sd :call StgDelete()<CR>
 nnoremap <leader>sr :!stg refresh -i<CR>
 ```
