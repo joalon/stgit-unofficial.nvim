@@ -1,18 +1,29 @@
 
-stgit_bufh = nil
-written_state = nil
-top_index = nil
-largest_index = nil
+local patch_stack = require('stgit-unofficial.patch_stack')
+local executor = require('stgit-unofficial.executor')
+
+local stgit_bufh = nil
+local patches = nil
+
+local function setup()
+    print("Hello, World!")
+end
+
+local function exec(args)
+    command = "stg"
+
+    for i,v in ipairs(args) do
+        command = command .. " " .. v
+    end
+
+    print("Would execute:")
+    print(command)
+    --vim.api.nvim_command("!" .. command)
+end
 
 local function series()
     written_state = vim.fn.systemlist("stg series")
-
-    for k, v in pairs(written_state) do
-        if v:sub(1, 1) == ">" then
-            top_index = k
-        end
-        largest_index = k
-    end
+    patches = patch_stack:new({ patches = written_state })
 
     vim.api.nvim_command("split")
     stgit_bufh = vim.api.nvim_create_buf(true, true)
@@ -20,8 +31,8 @@ local function series()
     vim.api.nvim_set_current_buf(stgit_bufh)
     vim.api.nvim_buf_set_name(stgit_bufh, "StGit Series")
     vim.api.nvim_buf_set_option(stgit_bufh, "buftype", "acwrite")
-    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, written_state)
-    vim.api.nvim_win_set_cursor(0, {top_index, 0})
+    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, patches:view())
+    vim.api.nvim_win_set_cursor(0, {patches:index_top(), 0})
 
     -- When writing to the buffer, run 'execute_staged' to apply the changes
     vim.cmd("autocmd BufWriteCmd <buffer="..stgit_bufh.."> :lua require('stgit-unofficial').execute_staged()")
@@ -31,38 +42,19 @@ local function series()
 end
 
 local function stage_pop()
-    if top_index > 1 then
-        local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
-
-        current_state[top_index-1] = "> " .. current_state[top_index-1]:sub(3, -1)
-        current_state[top_index] = "- " .. current_state[top_index]:sub(3, -1)
-
-        top_index = top_index - 1
-        vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, current_state)
-    end
+    patches:stage_pop()
+    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, patches:view())
 end
 
 local function stage_push()
-    if top_index < largest_index then
-        local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
-
-        current_state[top_index] = "+ " .. current_state[top_index]:sub(3, -1)
-        current_state[top_index+1] = "> " .. current_state[top_index+1]:sub(3, -1)
-
-        top_index = top_index + 1
-        vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, current_state)
-    end
+    patches:stage_push()
+    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, patches:view())
 end
 
 local function stage_delete()
-    local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
     local cursor_index = vim.api.nvim_win_get_cursor(0)[1]
-
-    if cursor_index > 1 and current_state[cursor_index]:sub(1, 1) == ">" then
-        current_state[cursor_index-1] = "> " .. current_state[cursor_index-1]:sub(3, -1)
-    end
-    current_state[cursor_index] = "D " .. current_state[cursor_index]:sub(3, -1)
-    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, current_state)
+    patches:stage_delete(cursor_index)
+    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, patches:view())
 end
 
 local function execute_staged()
@@ -72,33 +64,21 @@ local function execute_staged()
         vim.api.nvim_command("!git stash")
     end
 
-    local current_state = vim.api.nvim_buf_get_lines(stgit_bufh, 0, -1, false)
-
-    for line, patch in pairs(current_state) do
-        if patch:sub(1, 1) == "D" then
-            local cmd = "!stg delete " .. patch:sub(3, -1)
-            vim.api.nvim_command(cmd)
-        end
-    end
-
-    for line, patch in pairs(current_state) do
-        if patch:sub(1, 1) == ">" then
-            cmd = "!stg goto " .. patch:sub(3, -1)
-            vim.api.nvim_command(cmd)
-            top_index = line
-        end
-        largest_index = line
-    end
+    patches:execute_staged(executor:new())
 
     if index_is_dirty then
         vim.api.nvim_command("!git stash pop")
     end
 
     written_state = vim.fn.systemlist("stg series")
-    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, written_state)
+    patches = patch_stack:new({ patches = written_state })
+
+    vim.api.nvim_buf_set_lines(stgit_bufh, 0, -1, false, patches:view())
 end
 
 return {
+    exec           = exec,
+    setup          = setup,
     series         = series,
     stage_pop      = stage_pop,
     stage_push     = stage_push,

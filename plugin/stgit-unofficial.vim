@@ -14,3 +14,9 @@ endfunction
 function StgDelete()
     lua require('stgit-unofficial').stage_delete()
 endfunction
+
+function StgExecute()
+    lua require('stgit-unofficial').execute_staged()
+endfunction
+
+command! -nargs=* Stg lua require('stgit-unofficial').exec({<q-args>})
