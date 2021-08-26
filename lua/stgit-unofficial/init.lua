@@ -16,9 +16,7 @@ local function exec(args)
         command = command .. " " .. v
     end
 
-    print("Would execute:")
-    print(command)
-    --vim.api.nvim_command("!" .. command)
+    vim.api.nvim_command("!" .. command)
 end
 
 local function series()
